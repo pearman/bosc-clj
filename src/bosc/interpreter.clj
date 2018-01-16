@@ -12,15 +12,15 @@
       (= type :symbol)
       (let [fun (ns-resolve (:ns root) (symbol (name value)))
             args (assoc
-                   (utils/ast->table (first (:arglists (meta fun))))
-                   :type :list)]
+                  (utils/seq->table-arr (first (:arglists (meta fun))))
+                  :type :list)]
         {:type :method :args args :native-method fun}))))
 
 (defn execute [statement]
   (println "executing")
   (apply
-    (get-in statement [:method :native-method])
-    (:args statement)))
+   (get-in statement [:method :native-method])
+   (:args statement)))
 
 (defn accum-statement [sym statement]
   (let [result
@@ -49,11 +49,14 @@
       (:root statement)
       (let [next-index (inc index)]
         (recur
-          next-index
-          (get-index table next-index)
-          (accum-statement sym statement))))))
+         next-index
+         (get-index table next-index)
+         (accum-statement sym statement))))))
 
 (defn eval [str]
   (->> str
        parser/parse
        table-eval))
+
+(eval "{:cool 5 :neat 10}")
+;(parse "$(fun x)")
