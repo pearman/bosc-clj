@@ -1,29 +1,51 @@
 (ns bosc.interpreter
   (:require [bosc.parser :as parser]
-            [bosc.table-utils :as utils]))
+            [bosc.table-utils :as utils]
+            [bosc.types.local :as local-ns]
+            [bosc.types.table :as table-ns]
+            [clojure.inspector :as inspector]))
+
+(declare table-eval)
+
+(def local (atom {:type :local :ns 'bosc.types.local}))
 
 (defn get-index [table index]
   ((keyword (str index)) table))
 
 (defn resolve-method [root m]
-  (let [type (:type m)
+  (let [root (if (inspector/atom? root) @root root)
+        type (:type m)
         value (:value m)]
     (cond
       (= type :symbol)
-      (let [fun (ns-resolve (:ns root) (symbol (name value)))
+      (let [fun (or (ns-resolve (:ns root) (symbol (name value)))
+                    (ns-resolve 'bosc.types.table (symbol (name value))))
             args (assoc
                   (utils/seq->table-arr (first (:arglists (meta fun))))
                   :type :list)]
         {:type :method :args args :native-method fun}))))
 
+(defn resolve-symbol [sym]
+  (if (= (:value sym) :local)
+    local
+    (or ((:value sym) @local) sym)))
+
+(defn resolve [sym]
+  (let [type (:type sym)
+        value (:value sym)]
+    (case type
+      :execute (bosc.interpreter/table-eval sym)
+      :symbol (resolve-symbol sym)
+      sym)))
+
 (defn execute [statement]
-  (println "executing")
   (apply
    (get-in statement [:method :native-method])
    (:args statement)))
 
-(defn accum-statement [sym statement]
-  (let [result
+(defn accum-statement [symIn statement]
+  (let [sym (resolve symIn)
+        result
         (cond
           (nil? (:root statement))
           (assoc statement :root sym :args [sym])
@@ -34,7 +56,8 @@
           (> (get-in statement [:method :args :length] 0)
              (count (:args statement)))
           (assoc statement :args (conj (:args statement) sym)))]
-    (println result)
+    ;(println "--------------")
+    ;(println result)
     (if (= (get-in result [:method :args :length] -1)
            (count (:args result)))
       (let [executed (execute result)]
@@ -58,5 +81,8 @@
        parser/parse
        table-eval))
 
-(eval "{:cool 5 :neat 10}")
+;(eval "local assoc :x 10 | x + 10")
 ;(parse "$(fun x)")
+
+
+

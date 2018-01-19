@@ -8,6 +8,7 @@
              (assoc :type t :length (count s))))
   ([s] (seq->table-arr :list s)))
 
+
 (defn seq->map
   [s]
   (let [result (->> (partition 2 s)

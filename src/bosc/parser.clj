@@ -17,7 +17,7 @@
       infix-function = <'`'> prog <'`'>
       list = <'['> prog <']'>
       map = <'{'> prog <'}'>
-      symbol = #'[+\\-*/,!<>=%a-zA-Z_-][=a-zA-Z0-9_-]*'
+      symbol = #'[+\\-*|/,!<>=%a-zA-Z_-][=a-zA-Z0-9_-]*'
       keyword = <':'> symbol
       number = #'-?(0|[1-9][0-9]*)([.][0-9]+)?'
       string = <'\\\"'> (#'[^\"\\\\]+' | escaped-char)* <'\\\"'>
@@ -45,12 +45,12 @@
      :keyword (label :keyword (fn [x] (:value x)))
      :nil (label :nil (fn [x] nil))
      :string (label-ident :string)
-     :execute (fn [& m] (merge {:type :execute} (table-utils/seq->table-arr m)))
-     :prefix-function (fn [& m] (merge  (table-utils/seq->table-arr m) {:type :prefix-function}))
-     :infix-function (fn [& m] (merge (table-utils/seq->table-arr m)  {:type :infix-function}))
+     :execute (fn [& m] (table-utils/seq->table-arr :execute m))
+     :prefix-function (fn [& m] (table-utils/seq->table-arr :prefix-function m))
+     :infix-function (fn [& m] (table-utils/seq->table-arr :infix-function m))
      :method (fn [& m] {:type :method :args (first m) :value (table-utils/seq->table-arr (rest m))})
-     :list (fn [& m] (merge  (table-utils/seq->table-arr m) {:type :list}))
-     :map (fn [& m] (merge (table-utils/seq->map m)  {:type :map}))}))
+     :list (fn [& m](table-utils/seq->table-arr :list m))
+     :map (fn [& m] (table-utils/seq->map m))}))
 
 (defn print-and-return [x]
   (println x)
