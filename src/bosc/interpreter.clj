@@ -59,7 +59,7 @@
     (zipmap arg-syms args)))
 
 (defn execute [statement local]
-  (clojure.pprint/pprint statement)
+  ;;(clojure.pprint/pprint statement)
   (let [method (get statement :method)
         native-method (get method :native-method)
         args (:args statement)]
@@ -86,7 +86,7 @@
           (> (get-in statement [:method :args :length] 0)
              (count (:args statement)))
           (assoc statement :args (conj (:args statement) sym)))]
-    (clojure.pprint/pprint statement)
+    ;;(clojure.pprint/pprint statement)
     (if (= (get-in result [:method :args :length] -1)
            (count (:args result)))
       (let [executed (execute result local)]
