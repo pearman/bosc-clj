@@ -48,7 +48,8 @@
      :execute (fn [& m] (table-utils/seq->table-arr :execute m))
      :prefix-function (fn [& m] (table-utils/seq->table-arr :prefix-function m))
      :infix-function (fn [& m] (table-utils/seq->table-arr :infix-function m))
-     :method (fn [& m] {:type :method :args (first m) :value (table-utils/seq->table-arr (rest m))})
+     :method (fn [& m] (merge (table-utils/seq->table-arr (rest m))
+                              {:type :method :args (first m)}))
      :list (fn [& m](table-utils/seq->table-arr :list m))
      :map (fn [& m] (table-utils/seq->map m))}))
 
@@ -63,7 +64,3 @@
   (->> (parser input)
        (insta/transform transform-options)
        (table-utils/seq->table-arr :execute)))
-
-;(parse "$(fun x)")
-
-;(parse "[1 2 {:x 5}]")

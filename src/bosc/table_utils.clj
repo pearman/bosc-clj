@@ -16,3 +16,11 @@
                     (into {}))]
     (assoc result :type :map)))
 
+(defn get-index [table index]
+  ((keyword (str index)) table))
+
+(defn table->seq [table]
+  (let [length (get table :length)
+        keys (map #(keyword (str %)) (range length))
+        objs (map #(get table %) keys)]
+    objs))
